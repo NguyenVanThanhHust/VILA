@@ -24,13 +24,13 @@ from transformers.generation.streamers import TextIteratorStreamer
 import tempfile
 from fastapi import FastAPI, Request
 
-from llava.constants import (
-    DEFAULT_IM_END_TOKEN,
-    DEFAULT_IM_START_TOKEN,
-    DEFAULT_IMAGE_TOKEN,
-    IMAGE_PLACEHOLDER,
-    IMAGE_TOKEN_INDEX,
-)
+# from llava.constants import (
+#     DEFAULT_IM_END_TOKEN,
+#     DEFAULT_IM_START_TOKEN,
+#     DEFAULT_IMAGE_TOKEN,
+#     IMAGE_PLACEHOLDER,
+#     IMAGE_TOKEN_INDEX,
+# )
 from llava.conversation import SeparatorStyle, conv_templates
 from llava.mm_utils import KeywordsStoppingCriteria, get_model_name_from_path, process_images, tokenizer_image_token
 from llava.model.builder import load_pretrained_model
@@ -139,6 +139,7 @@ def load_video(video_url: str) -> str:
     temp_dir = ".serving"
     temp_fpath = os.path.join(temp_dir, f"{uuid.uuid5(uuid.NAMESPACE_DNS, video_url)}.mp4")
     
+    temp_fpath = "video.mp4"
     with open(temp_fpath, "wb") as f:
         f.write(video.getbuffer())
         
@@ -247,6 +248,7 @@ async def chat_completions(request: ChatCompletionRequest):
                         image = load_image(content.image_url.url)
                         prompt.append(image)
                     elif content.type == "video_url":
+                        print("save video from url", content.video_url.url)
                         video = load_video(content.video_url.url)
                         print("saving video to file", video)
                         frames = sample_frames_from_video(video, content.frames)
@@ -317,7 +319,6 @@ if __name__ == "__main__":
     global host, port
     host = os.getenv("VILA_HOST", "0.0.0.0")
     port = os.getenv("VILA_PORT", 8000)
-    model_path = os.getenv("VILA_MODEL_PATH", "Efficient-Large-Model/NVILA-8B")
     model_path = os.getenv("VILA_MODEL_PATH", "Efficient-Large-Model/NVILA-Lite-2B")
     conv_mode = os.getenv("VILA_CONV_MODE", "auto")
     workers = os.getenv("VILA_WORKERS", 1)
